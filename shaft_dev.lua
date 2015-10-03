@@ -46,7 +46,7 @@ local function fwd ()
   
   if not retval then
     while turtle.dig() do end
-    turtle.forwad()
+    turtle.forward()
   end
 end
 
@@ -66,7 +66,7 @@ local function next_row (row)
   turtle.select(1)
   horizontal_move[horizontal]()
   turtle.dig()
-  turtle.forward()
+  fwd()
   horizontal_move[horizontal]()
   turtle.digUp()
   turtle.digDown()
@@ -77,10 +77,24 @@ local function next_row (row)
     horizontal = "left"
   end
 end
-  
-
 
 local function clean_inventory ()
+  io.write("cleaning inventory")
+  
+  for slot=1,16 do
+    turtle.select(slot)
+    local item_detail = turtle.getItemDetail()
+    
+    if item_detail and junk[item_detail.name] then
+        turtle.dropDown()
+    end
+    io.write(".")
+  end
+  
+  print("done")
+  turtle.select(1)
+end
+
 local function compact_inventory ()
   io.write("compacting inventory")
   for o_slot=1,16 do
@@ -117,7 +131,7 @@ local function init ()
   print("initializing...")
   print("digging shaft with dimensions: " .. height*3 .. "x" .. width .. "x" .. depth .. " (HxWxD)")
   turtle.dig()
-  turtle.forward()
+  fwd()
   turtle.digUp()
   turtle.digDown()
 end
@@ -129,7 +143,7 @@ function main ()
       for c_d=2,depth do
         turtle.select(1)
         turtle.dig()
-        turtle.forward()
+        fwd()
         turtle.select(1)
         turtle.digUp()
         turtle.select(1)
