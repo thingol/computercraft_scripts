@@ -1,3 +1,31 @@
+--[[
+
+Copyright (c) 2015, Marius Hårstad Bauer-Kjerkreit
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+--]]
+
+
 local height
 local width
 local depth
@@ -6,7 +34,7 @@ local last_sn_goods = 0
 local junk = {
             ["minecraft:cobblestone"] = true,
             ["minecraft:dirt"] = true,
-            ["minecraft:gravel"] = true, 
+            ["minecraft:gravel"] = true,
       }
 
 local horizontal_move = {
@@ -27,7 +55,7 @@ local tArgs = { ... }
 
 local function print_usage()
   print("\nUsage:")
-  print("  shaft.lua <height> <width> <depth>")
+  print("  shaft.lua <height> <width> <depth> [vertical direction: up/down] [horizontal direction: left/right]")
 end
 
 if #tArgs < 3 then
@@ -40,10 +68,26 @@ else
   depth = tonumber(tArgs[3])
 end
 
+if #tArgs >= 4 then
+  if tArgs[4] == "up" or tArgs[4] == "down" then
+    vertical = tArgs[4]
+  else
+    print("Argument vertical direction has illegal value")
+  end
+end
+
+if #tArgs == 5 then
+  if tArgs[5] == "left" or tArgs[5] == "right" then
+    horizontal = tArgs[5]
+  else
+    print("Argument horizontal direction has illegal value")
+  end
+end
+
 -- utility functions
 local function fwd ()
   local retval = turtle.forward()
-  
+
   if not retval then
     while turtle.dig() do end
     turtle.forward()
@@ -70,7 +114,7 @@ local function next_row (row)
   horizontal_move[horizontal]()
   turtle.digUp()
   turtle.digDown()
-  
+
   if horizontal == "left" then
     horizontal = "right"
   else
@@ -80,17 +124,17 @@ end
 
 local function clean_inventory ()
   io.write("cleaning inventory")
-  
+
   for slot=1,16 do
     turtle.select(slot)
     local item_detail = turtle.getItemDetail()
-    
+
     if item_detail and junk[item_detail.name] then
         turtle.dropDown()
     end
     io.write(".")
   end
-  
+
   print("done")
   turtle.select(1)
 end
@@ -103,7 +147,7 @@ local function compact_inventory ()
     if item_detail then
       for i_slot=o_slot + 1, 16 do
         turtle.select(i_slot)
-        if turtle.getItemDetail() and 
+        if turtle.getItemDetail() and
             turtle.getItemDetail().name == item_detail.name then
           turtle.transferTo(o_slot)
           turtle.select(o_slot)
@@ -129,7 +173,7 @@ end
 -- init
 local function init ()
   print("initializing...")
-  print("digging shaft with dimensions: " .. height*3 .. "x" .. width .. "x" .. depth .. " (HxWxD)")
+  print("digging: "..vertical.." and "..horizontal..", ".. height*3 .. "x" .. width .. "x" .. depth .. " (HxWxD)")
   turtle.dig()
   fwd()
   turtle.digUp()
