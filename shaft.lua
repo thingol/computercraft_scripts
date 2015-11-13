@@ -123,51 +123,43 @@ local function next_row (row)
 end
 
 local function clean_inventory ()
-  io.write("cleaning inventory")
+   local ff = 17 -- one past max index of inventory
+   local function new_ff (slot)
+      local tmp_ff = ff
+      turtle.select(tmp_ff)
+      while turtle.getItemDetail() do
+         tmp_ff = tmp_ff + 1
+         turtle.select(tmp_ff)
+      end
+      turtle.select(slot)
+      return tmp_ff
+   end
 
-  for slot=1,16 do
-    turtle.select(slot)
-    local item_detail = turtle.getItemDetail()
+   io.write("cleaning inventory")
 
-    if item_detail and junk[item_detail.name] then
-        turtle.dropDown()
-    end
-    io.write(".")
+   for slot=1,16 do
+      turtle.select(slot)
+      local item_detail = turtle.getItemDetail()
+
+      if item_detail then
+         if junk[item_detail.name] then
+            turtle.dropDown()
+            ff = math.min(ff,slot)
+         else
+            if slot > ff then
+               turtle.transferTo(ff)
+               ff = new_ff(slot)
+            end
+         end
+      else
+         ff = math.min(ff,slot)
+         slot = 17
+      end
+      io.write(".")
   end
 
   print("done")
   turtle.select(1)
-end
-
-local function compact_inventory ()
-  io.write("compacting inventory")
-  for o_slot=1,16 do
-    turtle.select(o_slot)
-    local item_detail = turtle.getItemDetail()
-    if item_detail then
-      for i_slot=o_slot + 1, 16 do
-        turtle.select(i_slot)
-        if turtle.getItemDetail() and
-            turtle.getItemDetail().name == item_detail.name then
-          turtle.transferTo(o_slot)
-          turtle.select(o_slot)
-          break
-        end
-      end
-    else
-      for i_slot=o_slot + 1, 16 do
-        turtle.select(i_slot)
-        if turtle.getItemDetail() then
-          turtle.transferTo(o_slot)
-          turtle.select(o_slot)
-          break
-        end
-      end
-    end
-    io.write(".")
-  end
-  turtle.select(1)
-  print("done")
 end
 
 -- init
@@ -199,15 +191,15 @@ function main ()
     end
     if c_h~=height then
       clean_inventory()
-      -- compact_inventory()
       next_layer(c_h + 1)
     end
   end
   clean_inventory()
-  print("shaft complete")
+  print("digging complete")
   print("fuel remaining: " .. turtle.getFuelLevel())
 end
 
 -- program starts here
 init()
 main()
+
